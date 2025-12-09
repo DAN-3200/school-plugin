@@ -1,29 +1,19 @@
-import session from 'express-session';
-import MemoryStore from 'memorystore';
-import Redis from 'ioredis';
+// sessionRedis.ts
+import { createClient } from "redis";
+import { RedisStore } from "connect-redis";
 
-const DevStore = MemoryStore(session);
-const connectRedis = require("connect-redis");
-const RedisStore = connectRedis(session);
+export function createRedisStore() {
+  const client = createClient({
+    url: process.env.REDIS_URL || "redis://localhost:6379",
+  });
 
-const isProd = process.env.NODE_ENV === 'production';
+  client.on("error", (err) => console.error("Redis error:", err));
 
-let store;
+  // NÃO usar await aqui!
+  client.connect().catch((err) => console.error("Redis connect error:", err));
 
-if (isProd) {
-	// Railway expõe a variável REDIS_URL automaticamente
-	const redisClient = new Redis(process.env.REDIS_URL!);
-
-	store = new RedisStore({
-		client: redisClient,
-		prefix: 'sess:',
-	});
-} else {
-	store = new DevStore({
-		checkPeriod: 86400000,
-	});
+  return new RedisStore({
+    client,
+    prefix: "sess:",
+  });
 }
-
-export const RedisSession = {
-	store,
-};

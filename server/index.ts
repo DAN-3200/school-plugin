@@ -4,24 +4,25 @@ import MemoryStore from 'memorystore';
 import { registerRoutes } from './routes';
 import { serveStatic } from './static';
 import { createServer } from 'http';
-import { RedisSession } from './sessionRedis';
+import { createRedisStore } from './sessionRedis';
 
 const app = express();
 const httpServer = createServer(app);
-
 const SessionStore = MemoryStore(session);
+
+const store =
+	process.env.NODE_ENV === 'production'
+		? createRedisStore()
+		: new SessionStore({
+				checkPeriod: 86400000,
+		  });
 
 app.use(
 	session({
 		secret: process.env.SESSION_SECRET || 'dev-secret-change-in-prod',
 		resave: false,
 		saveUninitialized: false,
-		store:
-			process.env.NODE_ENV === 'production'
-				? RedisSession.store
-				: new SessionStore({
-						checkPeriod: 86400000,
-				  }),
+		store: store,
 		cookie: {
 			secure: process.env.NODE_ENV === 'production',
 			httpOnly: true,
