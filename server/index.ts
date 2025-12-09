@@ -4,7 +4,7 @@ import MemoryStore from 'memorystore';
 import { registerRoutes } from './routes';
 import { serveStatic } from './static';
 import { createServer } from 'http';
-import { createRedisStore } from './sessionRedis';
+import { createRedisStore } from './redis';
 
 const app = express();
 const httpServer = createServer(app);
