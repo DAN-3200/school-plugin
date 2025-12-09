@@ -8,6 +8,7 @@ import { createRedisStore } from './redis';
 
 const app = express();
 const httpServer = createServer(app);
+
 const SessionStore = MemoryStore(session);
 
 const store =
